@@ -11,7 +11,8 @@ var PARSE_KEYWORD = I++,
     PARSE_PARAM_ANSNO = I++,
     PARSE_PAYLOAD = I++,
     PARSE_TRAILER = I++;
-var INDEX = ['keyword', 'chan', 'msgno', 'more', 'seqno', 'size', 'ansno'];
+var INDEX = ['keyword', 'chan', 'msgno', 'more', 'seqno', 'size', 'ansno'],
+    KEYWORDS = ['MSG', 'RPY', 'ERR', 'ANS', 'NUL'];
 var MAX_INT = 2147483647,
     MAX_SEQNO = 4294967295;
 var SPACE = 32,
@@ -140,19 +141,23 @@ BeepParser.prototype.execute = function(b, start, end) {
             this._meta[INDEX[this._state]] = intval;
             if (this._state === PARSE_PARAM_SEQNO && intval > MAX_SEQNO) {
               return this._emitError('Bounds Error: header: seqno value is too large ('
-                                      + intval + ' > ' + MAX_SEQNO);
+                                      + intval + ' > ' + MAX_SEQNO + ')');
             } else if (intval > MAX_INT) {
               return this._emitError('Bounds Error: header: ' + INDEX[this._state]
                                       + ' value is too large ('
-                                      + intval + ' > ' + MAX_INT);
+                                      + intval + ' > ' + MAX_INT + ')');
             } else if (intval < 0) {
               return this._emitError('Bounds Error: header: ' + INDEX[this._state]
                                       + ' value cannot be negative ('
-                                      + intval + ' < 0');
+                                      + intval + ' < 0)');
             }
+          } else if (this._state === PARSE_KEYWORD
+                     && KEYWORDS.indexOf(this._meta.keyword) === -1) {
+            return this._emitError('Syntax Error: header: unknown keyword: '
+                                   + this._meta.keyword);
           }
-          if ((this._state === PARSE_KEYWORD && b[i] === CR) ||
-              (this._state === PARSE_PARAM_SIZE && this._meta.keyword !== 'ANS')) {
+          if ((this._state === PARSE_PARAM_SIZE && this._meta.keyword !== 'ANS')
+              || (this._state === PARSE_PARAM_ANSNO && this._meta.keyword === 'ANS')) {
             this._state = PARSE_PAYLOAD;
             this.emit('header', this._meta);
           } else
@@ -200,8 +205,8 @@ BeepParser.prototype.reset = function() {
                      = undefined;
 };
 BeepParser.prototype._emitError = function(msg) {
-  this.reset();
   this.emit('error', new Error(msg));
+  this.reset();
 };
 
 module.exports = BeepParser;
