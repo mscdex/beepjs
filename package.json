@@ -2,7 +2,7 @@
   "version": "0.0.0",
   "author": "Brian White <mscdex@mscdex.net>",
   "description": "A BEEP protocol implementation for node.js",
-  "main": "./lib/beep",
+  "main": "./lib/Beep",
   "engines": { "node" : ">=0.6.0" },
   "keywords": [ "beep", "exchange", "protocol", "framing", "tcp" ],
   "licenses": [ { "type": "MIT", "url": "http://github.com/mscdex/beepjs/raw/master/LICENSE" } ],
