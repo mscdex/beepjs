@@ -74,14 +74,14 @@ BeepParser.prototype.execute = function(b, start, end) {
             bLeft = end - start;
         if (need > 0) {
           if (start === 0 && end === b.length)
-            this.emit('data', b);
+            this.emit('data', b, this._meta);
           else if (need <= bLeft) {
             this._payloadCnt += need;
-            this.emit('data', b.slice(start, start + need));
+            this.emit('data', b.slice(start, start + need), this._meta);
             i += need;
           } else {
             this._payloadCnt += bLeft;
-            this.emit('data', b.slice(start, end));
+            this.emit('data', b.slice(start, end), this._meta);
             i += bLeft;
           }
         } else
@@ -182,7 +182,7 @@ BeepParser.prototype.execute = function(b, start, end) {
                                    + b[i].toString(16));
           }
         } else if (this._expectTrailer === 2) {
-          this.emit('end');
+          this.emit('end', this._meta);
           this.reset();
         } else
           ++this._expectTrailer;
